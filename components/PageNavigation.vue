@@ -22,7 +22,7 @@
             <div class="user-essentials">
                 <p class="username-paragraph">{{ user.username }}</p>
                 <div class = "nav-icon">
-                    <NuxtLink to = "/auth/account" @click = "linkClicked" class = "nav-link"><i class="fa-regular fa-user user-icon"></i></NuxtLink>
+                    <NuxtLink to = "/auth/account" @click = "" class = "nav-link"><i class="fa-regular fa-user user-icon"></i></NuxtLink>
                 </div>
                 <NuxtLink to = "/" class = "nav-link logout-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></NuxtLink>
             </div>
@@ -39,7 +39,7 @@ export default {
             user: {
                 username: "IliyanKS"
             }
-        }
+        };
     },
 
     mounted() {

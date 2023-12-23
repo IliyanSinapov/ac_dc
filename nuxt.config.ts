@@ -16,5 +16,10 @@ export default defineNuxtConfig({
   },
   css: ['@/assets/css/main.css'],
   devtools: { enabled: true },
-  plugins: ["plugins/fontawesome.js"]
-} as any)
+  plugins: ["plugins/fontawesome.js"],
+  modules: ["@nuxtjs/supabase"],
+  supabase: {
+    redirect: false
+  }
+
+})
