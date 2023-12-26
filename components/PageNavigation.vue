@@ -3,7 +3,7 @@
         <nav class="navigation-container navbar">
             <div>
 
-                <Sidebar class = "sidebar-component"/>
+                <Sidebar class="sidebar-component" />
 
                 <svg class="vbp-header-menu-button__svg">
                     <line x1="0" y1="50%" x2="100%" y2="50%" class="top" shape-rendering="crispEdges" />
@@ -12,7 +12,7 @@
 
 
 
-                <NuxtLink to = "/" style="margin-left: 3rem; margin-right: 3.5rem;" class="nav-link">AC/DC</NuxtLink>
+                <NuxtLink to="/" style="margin-left: 3rem; margin-right: 3.5rem;" class="nav-link">AC/DC</NuxtLink>
             </div>
 
             <div class="searchbar-container field">
@@ -20,33 +20,69 @@
             </div>
 
             <div class="user-essentials">
-                <p class="username-paragraph">{{ user.username }}</p>
-                <div class = "nav-icon">
-                    <NuxtLink to = "/auth/account" @click = "" class = "nav-link"><i class="fa-regular fa-user user-icon"></i></NuxtLink>
+                <p class="username-paragraph" v-text="user_username"></p>
+                <div class="nav-icon">
+                    <NuxtLink to="/auth/account" @click="" class="nav-link"><i class="fa-regular fa-user user-icon"></i>
+                    </NuxtLink>
                 </div>
-                <NuxtLink to = "/" class = "nav-link logout-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></NuxtLink>
+                <NuxtLink @click.native="handleLogout" id="logout-link" :to="path" class="nav-link logout-icon"><i
+                        class="fa-solid fa-arrow-right-from-bracket"></i></NuxtLink>
             </div>
         </nav>
     </header>
 </template>
 
 <script lang="ts">
+import type { Database } from '~/types/database.types';
+
 export default {
     name: "PageNavigation",
 
+    //@ts-ignore
     data() {
         return {
-            user: {
-                username: "IliyanKS"
-            }
-        };
+            path: "/"
+        }
     },
+    setup() {
+        const user = useSupabaseUser();
+        const client = useSupabaseClient<Database>();
+        let user_username: any = ref("");
 
+        const handleLogout = async () => {
+            try {
+                const { error } = await client.auth.signOut();
+                if (error) throw error
+           
+                window.location.href = "/"
+            } catch (error: any) {
+                console.log(error.message)
+            }
+        }
+
+        const handleUsername = async () => {
+            try {
+                if (user == null || user.value == null || user.value.id == null)
+                    throw Error("Guest user.")
+
+                const userId = user.value.id;
+                const {data, error} = await client.from("user_information").select("username").eq("user_id", userId);
+
+                if (error) throw error;
+
+                user_username.value = data[0].username;
+            } catch (error: any) {
+                user_username.value = error.message;
+            }
+        }
+
+        return { ...toRefs({ user, user_username, handleLogout, handleUsername }) }
+    },
     mounted() {
         const body = document.querySelector("body")!!;
         const button = document.querySelector(".vbp-header-menu-button__svg")!!
-        const sidebar = document.querySelector(".sidebar-component")!!;
-        const lines = document.querySelectorAll("line")!!;
+        const sidebar = document.querySelector(".sidebar-component")!!
+        const lines = document.querySelectorAll("line")!!
 
         button.addEventListener("click", () => {
             if (body.classList.contains("menu-open")) {
@@ -58,12 +94,9 @@ export default {
                 sidebar.classList.add("sidebar-active")
             }
         })
-    },
 
-    methods() {
-        const linkClicked = (): void => {
-
-        }
+        //@ts-ignore
+        this.handleUsername();
     }
 }
 </script>
@@ -117,12 +150,13 @@ export default {
     opacity: 1;
 }
 
-body.menu-open .user-essentials{
+body.menu-open .user-essentials {
     opacity: 0;
 }
 
 .username-paragraph {
     color: #fff;
+    white-space: nowrap;
 }
 
 .nav-icon {
@@ -194,8 +228,9 @@ body.menu-open .user-essentials{
     transition: opacity .3s, transform .3s;
 
 }
+
 body.menu-open .vbp-header-menu-button__svg {
-  transform: translateY(20%);
+    transform: translateY(20%);
 }
 
 body.menu-open .vbp-header-menu-button__svg .top {
@@ -218,10 +253,9 @@ body.menu-open .vbp-header-menu-button__svg .middle {
     }
 }
 
-@media (max-width: 767px){
+@media (max-width: 767px) {
     .user-essentials {
         display: none;
     }
 }
-
 </style>

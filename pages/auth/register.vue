@@ -46,15 +46,16 @@
                 </div>
             </div>
 
-            <p v-text="successMsg" class = "success-msg" :class = "{'success-msg-has-text': successMsgHasText}"/>
-            <p v-text="errorMsg" class = "error-msg" :class = "{'error-msg-has-text': errorMsgHasText}"/>
+            <p v-text="successMsg" class="success-msg" :class="{ 'success-msg-has-text': successMsgHasText }" />
+            <p v-text="errorMsg" class="error-msg" :class="{ 'error-msg-has-text': errorMsgHasText }" />
 
-            <button class="btn login-button" type="submit" href="#">Register</button>
+            <button class="btn login-button" type="submit">Register</button>
         </form>
     </div>
 </template>
-
 <script lang="ts">
+import type { Database } from '~~/types/database.types';
+
 export default {
     name: "register",
 
@@ -71,7 +72,7 @@ export default {
             layout: "auth"
         })
 
-        const client = useSupabaseClient()
+        const client = useSupabaseClient<Database>()
 
         const username = ref("");
         const email = ref("");
@@ -81,29 +82,36 @@ export default {
         const successMsg = ref("");
 
         const signUp = async () => {
+
+            const user_name = username.value;
             try {
-                if(password.value != confirmPassword.value)
+                if (password.value != confirmPassword.value)
                     throw new Error("Passwords don't match!");
                 else if (username.value = "")
                     throw new Error("Username should not be empty!")
                 else if (((password.value != confirmPassword.value) ||
-                            password.value == "" || 
-                            confirmPassword.value == "") &&
-                            email.value == "" &&
-                            username.value == "") throw new Error("Please fill the requared fields!")
+                    password.value == "" ||
+                    confirmPassword.value == "") &&
+                    email.value == "" &&
+                    username.value == "") throw new Error("Please fill the requared fields!")
 
-                const {data, error} = await client.auth.signUp({
+                const { data, error } = await client.auth.signUp({
                     email: email.value,
-                    password: password.value,
-                    options: {
-                        data: {
-                            username: username.value
-                        }
-                    }
+                    password: password.value
                 })
 
-                if( error ) throw error;
+                if (error) throw error;
                 successMsg.value = "Check your email to confirm account."
+
+                const { data: responce } = await client
+                    .from("user_information")
+                    .insert({
+                        // @ts-ignore
+                        user_id: data.user.id,
+                        username: user_name
+                    })
+                
+                window.location.href = "/auth/login"
             } catch (error: any) {
                 errorMsg.value = error.message;
             }
@@ -129,7 +137,6 @@ export default {
             return this.successMsg.trim().length > 0;
         },
         errorMsgHasText(): boolean {
-            console.log(this.errorMsg.trim().length > 0)
             return this.errorMsg.trim().length > 0;
         }
     }
@@ -249,13 +256,15 @@ export default {
     transform: translateY(-80%);
     font-size: 1.2rem;
 
+    white-space: nowrap;
+
     color: #020202;
 
     background-color: #fff;
 
     text-align: center;
 
-    width: 10rem;
+    width: 35%;
 
     border-radius: 1rem;
 }
@@ -273,7 +282,7 @@ export default {
     display: none;
 }
 
-.success-msg.success-msg-has-text{
+.success-msg.success-msg-has-text {
     display: block;
 }
 
@@ -283,7 +292,7 @@ export default {
     display: none;
 }
 
-.error-msg.error-msg-has-text{
+.error-msg.error-msg-has-text {
     display: block;
 }
 
@@ -311,6 +320,7 @@ export default {
 .success-msg.success-msg-has-text+.login-button {
     margin-top: 0;
 }
+
 .error-msg.error-msg-has-text+.login-button {
     margin-top: 0;
 }
