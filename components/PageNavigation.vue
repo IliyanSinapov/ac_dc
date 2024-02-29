@@ -21,11 +21,10 @@
 
             <div class="user-essentials">
                 <p class="username-paragraph" v-text="user_username"></p>
-                <div class="nav-icon">
-                    <NuxtLink to="/auth/account" @click="" class="nav-link"><i class="fa-regular fa-user user-icon"></i>
-                    </NuxtLink>
+                <div v-if = "isUserLoggedIn" class="nav-icon">
+                    <NuxtLink to="/auth/account" @click="" class="nav-link"><i class="fa-regular fa-user user-icon"></i></NuxtLink>
                 </div>
-                <NuxtLink @click.native="handleLogout" id="logout-link" :to="path" class="nav-link logout-icon"><i
+                <NuxtLink v-if = "isUserLoggedIn" @click.native="handleLogout" id="logout-link" :to="path" class="nav-link logout-icon"><i
                         class="fa-solid fa-arrow-right-from-bracket"></i></NuxtLink>
             </div>
         </nav>
@@ -48,6 +47,7 @@ export default {
         const user = useSupabaseUser();
         const client = useSupabaseClient<Database>();
         let user_username: any = ref("");
+        let isUserLoggedIn = false;
 
         const handleLogout = async () => {
             try {
@@ -55,6 +55,7 @@ export default {
                 if (error) throw error
            
                 window.location.href = "/"
+                isUserLoggedIn = false;
             } catch (error: any) {
                 console.log(error.message)
             }
@@ -63,7 +64,7 @@ export default {
         const handleUsername = async () => {
             try {
                 if (user == null || user.value == null || user.value.id == null)
-                    throw Error("Guest user.")
+                    throw Error("Please Login / Register.")
 
                 const userId = user.value.id;
                 const {data, error} = await client.from("user_information").select("username").eq("user_id", userId);
@@ -71,12 +72,13 @@ export default {
                 if (error) throw error;
 
                 user_username.value = data[0].username;
+                isUserLoggedIn = true;
             } catch (error: any) {
                 user_username.value = error.message;
             }
         }
 
-        return { ...toRefs({ user, user_username, handleLogout, handleUsername }) }
+        return { ...toRefs({ user, user_username, handleLogout, handleUsername, isUserLoggedIn }) }
     },
     mounted() {
         const body = document.querySelector("body")!!;

@@ -110,7 +110,7 @@ export default {
   transform: translate(-50%, -50%);
 
   width: 27svw;
-  height: 50svh;
+  min-height: 50vh;
 
   border-radius: 0.5rem;
 
@@ -225,7 +225,6 @@ export default {
 }
 
 .login-button {
-  margin-top: 2rem;
 
   width: 100%;
   height: 2.5rem;

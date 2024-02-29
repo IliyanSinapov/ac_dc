@@ -1,6 +1,6 @@
 <template>
-    <div class="login-form-container">
-        <form class="login-form" @submit.prevent="signUp">
+    <div class="register-form-container">
+        <form class="register-form" @submit.prevent="signUp">
             <div class="form-header">
                 <h2>Register</h2>
             </div>
@@ -49,7 +49,7 @@
             <p v-text="successMsg" class="success-msg" :class="{ 'success-msg-has-text': successMsgHasText }" />
             <p v-text="errorMsg" class="error-msg" :class="{ 'error-msg-has-text': errorMsgHasText }" />
 
-            <button class="btn login-button" type="submit">Register</button>
+            <button class="btn register-button" type="submit">Register</button>
         </form>
     </div>
 </template>
@@ -156,7 +156,7 @@ export default {
     clip-path: polygon(100% 0, 0 0, 100% 100%);
 }
 
-.login-form-container {
+.register-form-container {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -164,7 +164,7 @@ export default {
 
 
     width: 27svw;
-    height: 58svh;
+    /* height: 68%; */
 
     border-radius: .5rem;
 
@@ -175,7 +175,7 @@ export default {
     padding-block: 1.9rem;
 }
 
-.login-form {
+.register-form {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -202,7 +202,7 @@ export default {
     margin-top: 2rem;
 
     width: 100%;
-    height: 3.2rem;
+    height: 6.5vh;
 
     display: flex;
     align-items: center;
@@ -296,9 +296,9 @@ export default {
     display: block;
 }
 
-.login-button {
+.register-button {
 
-    margin-top: 2rem;
+    margin-top: 1rem;
 
     width: 100%;
     height: 2.5rem;
@@ -314,30 +314,32 @@ export default {
 
     color: #fff;
 
+    letter-spacing: .2rem;
+
     transition: all .2s ease-in-out;
 }
 
-.success-msg.success-msg-has-text+.login-button {
+.success-msg.success-msg-has-text+.register-button {
     margin-top: 0;
 }
 
-.error-msg.error-msg-has-text+.login-button {
+.error-msg.error-msg-has-text+.register-button {
     margin-top: 0;
 }
 
-.login-button:hover {
+.register-button:hover {
     background-color: #006179;
 
     box-shadow: 0.1rem 0 1rem 0.05rem #006278;
 }
 
 @media (max-width: 1080px) {
-    .login-form-container {
+    .register-form-container {
         width: 90vw;
         height: 60svh;
     }
 
-    .login-button {
+    .register-button {
         margin-top: 0;
         height: 4rem;
 
