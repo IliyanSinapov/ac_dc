@@ -12,7 +12,7 @@
 
 
 
-                <NuxtLink to="/" style="margin-left: 3rem; margin-right: 3.5rem;" class="nav-link">AC/DC</NuxtLink>
+                <NuxtLink @click.native = "handleNavLink" to="/" style="margin-left: 3rem; margin-right: 3.5rem;" class="nav-link">AC/DC</NuxtLink>
             </div>
 
             <div class="searchbar-container field">
@@ -21,11 +21,13 @@
 
             <div class="user-essentials">
                 <p class="username-paragraph" v-text="user_username"></p>
-                <div v-if = "isUserLoggedIn" class="nav-icon">
-                    <NuxtLink to="/auth/account" @click="" class="nav-link"><i class="fa-regular fa-user user-icon"></i></NuxtLink>
+                <div v-if="isUserLoggedIn.valueOf()" class="nav-icon">
+                    <NuxtLink to="/auth/account" @click="" class="nav-link"><i class="fa-regular fa-user user-icon"></i>
+                    </NuxtLink>
                 </div>
-                <NuxtLink v-if = "isUserLoggedIn" @click.native="handleLogout" id="logout-link" :to="path" class="nav-link logout-icon"><i
-                        class="fa-solid fa-arrow-right-from-bracket"></i></NuxtLink>
+                <NuxtLink v-if="isUserLoggedIn.valueOf()" @click.native="handleLogout" id="logout-link" :to="path"
+                    class="nav-link logout-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </NuxtLink>
             </div>
         </nav>
     </header>
@@ -47,15 +49,15 @@ export default {
         const user = useSupabaseUser();
         const client = useSupabaseClient<Database>();
         let user_username: any = ref("");
-        let isUserLoggedIn = false;
+        let isUserLoggedIn = ref(false);
 
         const handleLogout = async () => {
             try {
                 const { error } = await client.auth.signOut();
                 if (error) throw error
-           
+
                 window.location.href = "/"
-                isUserLoggedIn = false;
+                isUserLoggedIn.value = false;
             } catch (error: any) {
                 console.log(error.message)
             }
@@ -67,18 +69,31 @@ export default {
                     throw Error("Please Login / Register.")
 
                 const userId = user.value.id;
-                const {data, error} = await client.from("user_information").select("username").eq("user_id", userId);
+                const { data, error } = await client.from("user_information").select("username").eq("user_id", userId);
 
                 if (error) throw error;
 
                 user_username.value = data[0].username;
-                isUserLoggedIn = true;
+
+                isUserLoggedIn.value = true;
             } catch (error: any) {
                 user_username.value = error.message;
             }
         }
 
-        return { ...toRefs({ user, user_username, handleLogout, handleUsername, isUserLoggedIn }) }
+        const handleNavLink = () => {
+            const body = document.querySelector("body")!!;
+            const button = document.querySelector(".vbp-header-menu-button__svg")!!
+            const sidebar = document.querySelector(".sidebar-component")!!
+            const lines = document.querySelectorAll("line")!!
+
+            if (body.classList.contains("menu-open")) {
+                body.classList.remove("menu-open")
+                sidebar.classList.remove("sidebar-active")
+            }
+        }
+
+        return { ...toRefs({ user, user_username, handleLogout, handleUsername, isUserLoggedIn, handleNavLink }) }
     },
     mounted() {
         const body = document.querySelector("body")!!;
@@ -187,6 +202,7 @@ body.menu-open .user-essentials {
 
 .logout-icon {
     margin-left: 3rem;
+    color: #fff;
 }
 
 .nav-link {

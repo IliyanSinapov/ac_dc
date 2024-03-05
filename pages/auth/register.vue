@@ -103,14 +103,14 @@ export default {
                 if (error) throw error;
                 successMsg.value = "Check your email to confirm account."
 
-                const { data: responce } = await client
-                    .from("user_information")
-                    .insert({
-                        // @ts-ignore
-                        user_id: data.user.id,
-                        username: user_name
-                    })
-                
+                const { data: responce } = await client.from("user_information").insert({
+                    // @ts-ignore
+                    user_id: data.user.id,
+                    username: user_name
+                })
+
+                console.log(responce)
+
                 window.location.href = "/auth/login"
             } catch (error: any) {
                 errorMsg.value = error.message;
@@ -264,7 +264,7 @@ export default {
 
     text-align: center;
 
-    width: 35%;
+    width: 45%;
 
     border-radius: 1rem;
 }

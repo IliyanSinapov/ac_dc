@@ -1,11 +1,14 @@
 <template>
     <div class="sidebar sidebar-container">
 
-        <div class = "sidebar-information">
+        <div class="sidebar-information">
             <div class="user-information">
-                <div class="user-avatar-icon"></div>
-                <p class="user-username">IliyanKS</p>
-                <NuxtLink to = "/auth/account" class="view-profile-link">View Profile</NuxtLink>
+                <div class="user-avatar-icon">
+                    <img :src="user_avatar" alt="User Avatar" class="user-avatar" />
+                </div>
+                <p class="user-username" v-text="user_username"></p>
+                <input type="file" id="fileInput" style="display: none" @change="handleFileUpload" />
+                <NuxtLink @click.native="openFileSelector" class="view-profile-link">Upload Avatar</NuxtLink>
             </div>
 
             <div>
@@ -26,32 +29,138 @@
             </div>
         </div>
 
-        <div class="guest-user-information">
+        <div v-if="!isUserLoggedIn.valueOf()" class="guest-user-information">
             <ul class="sidebar-guest-list">
                 <li class="sidebar-item">
-                    <NuxtLink to = "/auth/login" class="nav-link">Log In</NuxtLink>
+                    <NuxtLink @click.native="handleSidebarLink" to="/auth/login" class="nav-link">Log In</NuxtLink>
                 </li>
                 <li class="sidebar-item">
-                    <NuxtLink to = "/auth/register" class="nav-link">Register</NuxtLink>
+                    <NuxtLink @click.native="handleSidebarLink" to="/auth/register" class="nav-link">Register</NuxtLink>
+                </li>
+            </ul>
+        </div>
+
+        <div v-if="isUserLoggedIn.valueOf()" class="guest-user-information">
+            <ul class="sidebar-guest-list">
+                <li class="sidebar-item">
+                    <NuxtLink @click.native="handleLogout" class="nav-link">Log Out</NuxtLink>
                 </li>
             </ul>
         </div>
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import type { Database } from '~/types/database.types';
+
 export default {
     name: "Sidebar",
 
     data() {
         return {
-            user: {
-                username: "IliyanKS"
-            }
+            path: "/"
         }
     },
 
-    mounted () {
+    setup() {
+        const user = useSupabaseUser();
+        const client = useSupabaseClient<Database>();
+        let user_username: any = ref("");
+        const user_avatar: any = ref("");
+        let isUserLoggedIn = ref(false);
+
+        const handleLogout = async () => {
+            try {
+                const { error } = await client.auth.signOut();
+                if (error) throw error
+
+                window.location.href = "/"
+                isUserLoggedIn.value = false;
+            } catch (error: any) {
+            }
+        }
+
+        const handleUsername = async () => {
+            try {
+                if (user == null || user.value == null || user.value.id == null)
+                    throw Error("Guest User.")
+
+                const userId = user.value.id;
+                const { data, error } = await client.from("user_information").select("username").eq("user_id", userId);
+
+                if (error) throw error;
+
+                user_username.value = data[0].username;
+
+                isUserLoggedIn.value = true;
+            } catch (error: any) {
+                user_username.value = error.message;
+            }
+        }
+
+        const handleSidebarLink = () => {
+            const body = document.querySelector("body")!!;
+            const sidebar = document.querySelector(".sidebar-component")!!
+
+            if (body.classList.contains("menu-open")) {
+                body.classList.remove("menu-open")
+                sidebar.classList.remove("sidebar-active")
+            }
+        }
+
+        const openFileSelector = () => {
+            document.getElementById("fileInput")!!.click();
+        }
+
+        const handleFileUpload = async (event: any) => {
+            const file = event.target.files[0];
+
+            try {
+
+                const { data: userData, error: userError } = await client.from("user_information").select("relative_avatar_path").eq("user_id", user.value?.id);
+
+                if (userData !== null) {
+                    const { data:removeFileData, error: removeFileError } = await client.storage.from('user_avatars').remove([userData[0].relative_avatar_path]);
+                }
+
+                const { data, error } = await client.storage
+                    .from('user_avatars')
+                    .upload(`public/${file.name}`, file);
+
+                if (error) throw error;
+
+                const { data: user_data, error: user_error } = await client
+                    .from("user_information")
+                    .update({ avatar_image: client.storage.from('user_avatars').getPublicUrl(data.path).data.publicUrl })
+                    .eq("user_id", user.value?.id);
+
+                const { data: userUploadData, error: userUploadError } = await client.from("user_information")
+                    .update({ relative_avatar_path: data.path })
+                    .eq("user_id", user.value?.id);
+
+                handleAvatar();
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        }
+
+        const handleAvatar = async () => {
+            if (user.value == null || user.value.id == null)
+                return;
+
+            const userId = user.value.id;
+            const { data, error } = await client.from("user_information").select("avatar_image").eq("user_id", userId);
+
+            if (error || data[0].avatar_image === null) return;
+
+            user_avatar.value = data[0].avatar_image;
+
+        }
+
+        return { ...toRefs({ user, user_username, user_avatar, handleUsername, isUserLoggedIn, handleLogout, handleSidebarLink, openFileSelector, handleFileUpload, handleAvatar }) }
+    },
+
+    mounted() {
 
         const sidebarItems = document.querySelectorAll(".sidebar-item");
         for (let i = 0; i < sidebarItems.length; i++)
@@ -69,20 +178,13 @@ export default {
                 }
             })
 
-        //TODO: THIS BELOW NEEDS SERIOUS WORK
-        // const userInformation = document.querySelector(".user-information");
-        // const guestUserInformation = document.querySelector(".guest-user-information");
-        //
-        // if (userInformation.style.display === "none")
-        //     guestUserInformation.style.display = "block";
-        // else
-        //     guestUserInformation.style.display = "none";
+        this.handleUsername();
+        this.handleAvatar();
     }
 }
 </script>
 
 <style scoped>
-
 .sidebar-container {
     background-color: #020202;
     padding-inline: 1.9rem;
@@ -149,6 +251,14 @@ body.menu-open .sidebar-container {
     opacity: 1;
 
     border-radius: 50%;
+    overflow: hidden;
+}
+
+.user-avatar {
+    width: 100%;
+
+    transform: translateY(-100%);
+
 }
 
 .view-profile-link {
@@ -217,6 +327,7 @@ body.menu-open .sidebar-container {
     list-style: none;
 
     margin-bottom: 2rem;
+
     .sidebar-item {
         border: none;
 

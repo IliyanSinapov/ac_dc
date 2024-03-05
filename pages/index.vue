@@ -29,9 +29,9 @@ const products = await fetchProducts();
 
             <Swiper :modules="[Pagination, Navigation, Autoplay]" :grab-cursor="true" :loop="true" :pagination="true"
                 :navigation="true" :autoplay="{
-                    delay: 3000,
-                    disableOnInteraction: false
-                }" @slide-change="updateSwiper()">
+                delay: 4000,
+                disableOnInteraction: false
+            }" @slide-change="updateSwiper()">
                 <SwiperSlide v-for="product in products">
                     <div class="top-product-container">
                         <img class="product-image" :src="`/images/${product.imagePath}`" alt="">
@@ -43,7 +43,12 @@ const products = await fetchProducts();
                                 <p class="product-description" v-text="`Модел: ${product.model}`"></p>
                                 <!-- <p class="product-description" v-text="`${product.description}`"></p> -->
                             </div>
-                            <button class="product-button">Към Офертата</button>
+                            <button class="product-button">
+                                <span>
+                                    Към Офертата
+                                </span>
+                                <i class="fa-solid fa-arrow-right product-button-arrow"></i>
+                            </button>
                         </div>
                     </div>
                 </SwiperSlide>
@@ -132,7 +137,23 @@ export default {
     width: 60%;
     max-height: 80%;
 
-    border-radius: .5rem;
+    border-radius: .2rem;
+
+    background-color: #1a1a1a50;
+
+    transition: all .2s ease-in;
+}
+
+.swiper:hover .product-image {
+    opacity: 1;
+}
+.swiper:hover {
+    filter: brightness(1.1);
+}
+
+.swiper:hover .product-button {
+    background-color: #fff;
+    color: #020202;
 }
 
 .top-product-container {
@@ -142,6 +163,8 @@ export default {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
+
+    padding-block: 2.5rem;
 }
 
 .product-image {
@@ -152,28 +175,35 @@ export default {
 
     border: none;
     border-radius: .2rem;
+
+    opacity: .5;
+
+    transition: .2s ease-in;
 }
 
 .product-info {
     grid-column: 2;
 
+    padding-right: 4rem;
+
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    gap: .5rem;
+    justify-content: right;
+    gap: 1rem;
 
     font-size: 1.1rem;
-
 }
 
 .product-name,
 .product-description {
     color: #fff;
 
+    text-align: right;
+
 }
 
 .product-button {
-    width: 100%;
+    width: 25%;
     padding: .5rem;
     margin-top: 1rem;
 
@@ -183,6 +213,52 @@ export default {
     border: none;
     border-radius: .2rem;
 
+    position: absolute;
+    bottom: 2.5rem;
+
+    align-self: end;
+
     cursor: pointer;
+
+    transition: .2s ease-in;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product-button-arrow {
+    display: none;
+    color: #000;
+    /* transition: all .2s ease-in; */
+
+    animation: fadeIn .35s ease-in;
+}
+
+.product-button span {
+    transition: all .35s ease-in;
+}
+
+.product-button:hover .product-button-arrow {
+    display: block;
+    transform: translateX(.25rem);
+}
+
+.product-button:hover span {
+    transform: translateX(-.25rem);
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    75% {
+        opacity: .5;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 </style>
