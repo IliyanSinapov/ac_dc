@@ -25,7 +25,7 @@ const products = await fetchProducts();
 <template>
     <main>
         <div class="top-products-container">
-            <h4 class="section-header">Top products</h4>
+            <h4 class="section-header">Най - продавани</h4>
 
             <Swiper :modules="[Pagination, Navigation, Autoplay]" :grab-cursor="true" :loop="true" :pagination="true"
                 :navigation="true" :autoplay="{
@@ -41,14 +41,13 @@ const products = await fetchProducts();
                             <div>
                                 <p class="product-description" v-text="`Марка: ${product.make}`"></p>
                                 <p class="product-description" v-text="`Модел: ${product.model}`"></p>
-                                <!-- <p class="product-description" v-text="`${product.description}`"></p> -->
                             </div>
-                            <button class="product-button">
+                            <NuxtButton @click.native = "goToProduct(product.id)" class="product-button">
                                 <span>
                                     Към Офертата
                                 </span>
                                 <i class="fa-solid fa-arrow-right product-button-arrow"></i>
-                            </button>
+                            </NuxtButton>
                         </div>
                     </div>
                 </SwiperSlide>
@@ -101,6 +100,11 @@ export default {
 
         prevSlide.addEventListener("click", this.updateSwiper);
         nextSlide.addEventListener("click", this.updateSwiper);
+    },
+    methods: {
+        goToProduct(productId) {
+            this.$router.push(`/products/${productId}`)
+        }
     }
 }
 </script>

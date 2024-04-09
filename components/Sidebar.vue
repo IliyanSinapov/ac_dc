@@ -8,22 +8,19 @@
                 </div>
                 <p class="user-username" v-text="user_username"></p>
                 <input type="file" id="fileInput" style="display: none" @change="handleFileUpload" />
-                <NuxtLink @click.native="openFileSelector" class="view-profile-link">Upload Avatar</NuxtLink>
+                <NuxtLink @click.native="openFileSelector" class="view-profile-link">Качи профилна снимка</NuxtLink>
             </div>
 
             <div>
                 <ul class="sidebar-list">
                     <li class="sidebar-item">
-                        <NuxtLink class="sidebar-link">Products</NuxtLink>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                        <NuxtLink @click.native = "handleSidebarLink" to="/products/" class="sidebar-link">Продукти</NuxtLink>
                     </li>
                     <li class="sidebar-item">
-                        <NuxtLink class="sidebar-link">Contacts</NuxtLink>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                        <NuxtLink @click.native = "handleSidebarLink" to="/cart" class="sidebar-link">Количка</NuxtLink>
                     </li>
                     <li class="sidebar-item">
-                        <NuxtLink class="sidebar-link">About</NuxtLink>
-                        <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                        <NuxtLink @click.native = "handleSidebarLink" to = "/about" class="sidebar-link">За мен</NuxtLink>
                     </li>
                 </ul>
             </div>
@@ -32,10 +29,10 @@
         <div v-if="!isUserLoggedIn.valueOf()" class="guest-user-information">
             <ul class="sidebar-guest-list">
                 <li class="sidebar-item">
-                    <NuxtLink @click.native="handleSidebarLink" to="/auth/login" class="nav-link">Log In</NuxtLink>
+                    <NuxtLink @click.native="handleSidebarLink" to="/auth/login" class="nav-link">Влез</NuxtLink>
                 </li>
                 <li class="sidebar-item">
-                    <NuxtLink @click.native="handleSidebarLink" to="/auth/register" class="nav-link">Register</NuxtLink>
+                    <NuxtLink @click.native="handleSidebarLink" to="/auth/register" class="nav-link">Регистриране</NuxtLink>
                 </li>
             </ul>
         </div>
@@ -43,7 +40,7 @@
         <div v-if="isUserLoggedIn.valueOf()" class="guest-user-information">
             <ul class="sidebar-guest-list">
                 <li class="sidebar-item">
-                    <NuxtLink @click.native="handleLogout" class="nav-link">Log Out</NuxtLink>
+                    <NuxtLink @click.native="handleLogout" class="nav-link">Излез</NuxtLink>
                 </li>
             </ul>
         </div>
@@ -115,6 +112,10 @@ export default {
         const handleFileUpload = async (event: any) => {
             const file = event.target.files[0];
 
+            const newFilename = file.name.replace(/(\.[^.]+$)/, `_${user.value?.id}$1`);
+
+            console.log(newFilename);
+
             try {
 
                 const { data: userData, error: userError } = await client.from("user_information").select("relative_avatar_path").eq("user_id", user.value?.id);
@@ -123,9 +124,13 @@ export default {
                     const { data:removeFileData, error: removeFileError } = await client.storage.from('user_avatars').remove([userData[0].relative_avatar_path]);
                 }
 
+                const newFile = new File([file], newFilename, { type: file.type })
+
+                console.log(newFile.name);
+
                 const { data, error } = await client.storage
                     .from('user_avatars')
-                    .upload(`public/${file.name}`, file);
+                    .upload(`public/${newFile.name}`, newFile);
 
                 if (error) throw error;
 
@@ -139,6 +144,8 @@ export default {
                     .eq("user_id", user.value?.id);
 
                 handleAvatar();
+
+                window.location.reload();
             } catch (error) {
                 console.error('Error uploading file:', error);
             }
@@ -194,7 +201,7 @@ export default {
     left: 0;
 
     width: 25vw;
-    height: 95vh;
+    height: 94vh;
 
     opacity: .9;
 
@@ -284,7 +291,6 @@ body.menu-open .sidebar-container {
 
     cursor: pointer;
 
-    padding-block: 1rem;
     padding-inline: 1rem;
 
     display: flex;
@@ -317,6 +323,8 @@ body.menu-open .sidebar-container {
 
 .sidebar-link {
     color: #fff;
+    width: 100%;
+    padding-block: 1rem;
 }
 
 .sidebar-guest-list {

@@ -21,9 +21,8 @@
 
             <div class="user-essentials">
                 <p class="username-paragraph" v-text="user_username"></p>
-                <div v-if="isUserLoggedIn.valueOf()" class="nav-icon">
-                    <NuxtLink to="/auth/account" @click="" class="nav-link"><i class="fa-regular fa-user user-icon"></i>
-                    </NuxtLink>
+                <div v-if="isUserLoggedIn.valueOf()" class="nav-icon user-avatar-container">
+                    <img :src = "user_avatar" alt = "" class = "user-avatar__navbar">
                 </div>
                 <NuxtLink v-if="isUserLoggedIn.valueOf()" @click.native="handleLogout" id="logout-link" :to="path"
                     class="nav-link logout-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -49,6 +48,7 @@ export default {
         const user = useSupabaseUser();
         const client = useSupabaseClient<Database>();
         let user_username: any = ref("");
+        let user_avatar: any = ref("");
         let isUserLoggedIn = ref(false);
 
         const handleLogout = async () => {
@@ -93,7 +93,19 @@ export default {
             }
         }
 
-        return { ...toRefs({ user, user_username, handleLogout, handleUsername, isUserLoggedIn, handleNavLink }) }
+        const handleAvatar = async () => {
+            if (user.value == null || user.value.id == null)
+                return;
+
+            const userId = user.value.id;
+            const { data, error } = await client.from("user_information").select("avatar_image").eq("user_id", userId);
+
+            if (error || data[0].avatar_image === null) return;
+
+            user_avatar.value = data[0].avatar_image;
+        }
+
+        return { ...toRefs({ user, user_username, user_avatar, handleLogout, handleUsername, isUserLoggedIn, handleNavLink, handleAvatar }) }
     },
     mounted() {
         const body = document.querySelector("body")!!;
@@ -114,6 +126,7 @@ export default {
 
         //@ts-ignore
         this.handleUsername();
+        this.handleAvatar();
     }
 }
 </script>
@@ -158,8 +171,9 @@ export default {
 }
 
 .user-essentials {
+    width: calc(15% + 3rem);
     display: flex;
-
+    justify-content: space-between;
     align-items: center;
 
     transition: opacity .25s;
@@ -179,7 +193,7 @@ body.menu-open .user-essentials {
 .nav-icon {
     cursor: pointer;
 
-    min-width: 20%;
+    min-width: 3rem;
     min-height: 100%;
 
     display: flex;
@@ -196,8 +210,22 @@ body.menu-open .user-essentials {
     box-shadow: rgba(167, 167, 167, 0.26) 0 0 1rem .05rem;
 }
 
+.user-avatar-container {
+    max-width: 3rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    margin: 0;
+    overflow: hidden;
+}
+
 .user-icon {
     color: #fff;
+}
+
+.user-avatar__navbar {
+    width: 100%;
+    border-radius: 50%;
 }
 
 .logout-icon {

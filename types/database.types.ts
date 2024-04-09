@@ -14,6 +14,10 @@ export interface Database {
           id: string;
           user_id: string;
           username: string;
+          avatar_image: string;
+          relative_avatar_path: string;
+          cart_id: string;
+
         };
         insert: {
           user_id: string;
@@ -23,6 +27,10 @@ export interface Database {
           username: string;
         };
       };
+      cart: {
+        id: string;
+        products: any[];
+      }
     };
     Views: {
       [_ in never]: never;
