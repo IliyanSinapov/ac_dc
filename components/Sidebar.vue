@@ -14,6 +14,9 @@
             <div>
                 <ul class="sidebar-list">
                     <li class="sidebar-item">
+                        <NuxtLink @click.native = "handleSidebarLink" to="/products/" class="sidebar-link">Начало</NuxtLink>
+                    </li>
+                    <li class="sidebar-item">
                         <NuxtLink @click.native = "handleSidebarLink" to="/products/" class="sidebar-link">Продукти</NuxtLink>
                     </li>
                     <li class="sidebar-item">

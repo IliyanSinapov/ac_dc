@@ -16,7 +16,7 @@
             </div>
 
             <div class="searchbar-container field">
-                <input class="search-field" type="text" placeholder="Search" name="searchbar">
+                <input style="opacity: 0 !important;" class="search-field" type="text" placeholder="Search" name="searchbar">
             </div>
 
             <div class="user-essentials">
@@ -59,7 +59,6 @@ export default {
                 window.location.href = "/"
                 isUserLoggedIn.value = false;
             } catch (error: any) {
-                console.log(error.message)
             }
         }
 

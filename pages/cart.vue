@@ -86,7 +86,9 @@ export default {
                 console.log(products);
                 this.products = products;
 
-                this.total = products.reduce((acc, product) => acc + product.product.price * product.prduct.quantity, 0);
+                this.total = products.reduce((acc, product) => acc + product.product.price * product.product.quantity, 0);
+
+                console.log(this.total);
             } catch (error: any) {
                 console.log(error.message);
             }
